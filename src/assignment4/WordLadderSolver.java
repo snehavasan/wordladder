@@ -14,138 +14,238 @@ package assignment4;
 import java.util.*;
 import java.io.*;
 
-// commit test
+
+
 // do not change class name or interface it implements
 public class WordLadderSolver implements Assignment4Interface
 {
     // declare class members here.
-	private String prevWord;
-	private String nextWord;
 	private ArrayList<String> dict;
+	private List<String> soln;
 	
 	// add a constructor for this object. HINT: it would be a good idea to set up the dictionary there
-	public WordLadderSolver(String str1, String str2, ArrayList<String> dictionary){
+	public WordLadderSolver(ArrayList<String> dictionary){
 		for(int i = 0; i < dictionary.size(); i++){
 			if(dictionary.get(i).substring(0, 1).equals("*")){
 				dictionary.remove(i);
-				i = i-1;
+				i = i - 1;
 			}
+			
 			else{
 				dictionary.set(i, dictionary.get(i).substring(0, 5));
 			}
 		}
-		prevWord = str1;
-		nextWord = str2;
 		dict = dictionary;
+		soln = new ArrayList<String>();
 	}
 
     // do not change signature of the method implemented from the interface
 
+	/******************************************************************************
+	* Method Name: computeLadder                  
+	* Purpose: Processes solution ladder                                     
+	* Returns: List<String> that has solution ladder; if not, exception thrown                                                          
+	******************************************************************************/
     public List<String> computeLadder(String startWord, String endWord) throws NoSuchLadderException 
     {
        if (startWord.length() != 5 || endWord.length() != 5)
        {
-          System.err.println("invalid input. words must be five characters long.");
-          throw new NoSuchLadderException("one or both of the words were the wrong length");
+          System.out.println("ERROR: Word length must be five characters");
+          throw new NoSuchLadderException("ERROR: Input word(s) are wrong length");
        }
-    	//returns a List<String> that contains the solution ladder. If no ladder is found, no such ladder exception is thrown
-      boolean boolWordStart = false;
-      boolean boolWordEnd = false;
+      boolean boolWStart = false;
+      boolean boolWEnd = false;
       for (int i = 0; i < dict.size(); i++)
       {
          if (startWord.equals(dict.get(i)))
-            boolWordStart = true;
+            boolWStart = true;
          if (endWord.equals(dict.get(i)))
-            boolWordEnd = true;
+            boolWEnd = true;
       }
-      if (!boolWordStart)
+      if (!boolWStart)
       {
-         System.err.println("Starting word not in the dictionary");
-         throw new NoSuchLadderException("startWord is not in the dictionary");
+         System.out.println("Starting word not in dictionary");
+         throw new NoSuchLadderException("startWord is not in dictionary");
       }
-      if (!boolWordEnd)
+      if (!boolWEnd)
       {
-         System.err.println("Ending word not in the dictionary");
-         throw new NoSuchLadderException("endWord is not in the dictionary");
+         System.out.println("Ending word not in dictionary");
+         throw new NoSuchLadderException("endWord is not in dictionary");
       }
       
       
       List<String> ladder = new ArrayList<String>();
     	try{
-    	ladder = makeLadder(startWord, endWord, 0);
+    	ladder = makeLadder(startWord, endWord, -1);
     	}
     	catch (NoSuchLadderException i){
     		throw i;
     	}
+    	
     	if (ladder.size() == 0)
-    	   throw new NoSuchLadderException("Ladder does not exist");
-    	else return ladder;
+    	{
+         throw new NoSuchLadderException("Ladder does not exist.");
+    	}
+    	
+    	if (!ladder.get(0).equals(startWord))
+    	   ladder.add(0, startWord);
+    	
+    	cutLadder(ladder);
+    	return ladder;
     	
     }
     
-    // TODO: Finish this implementation
+    
+    /******************************************************************************
+	* Method Name: validateResult                                       
+	* Purpose: Checks result                                     
+	* Returns: Boolean to confirm                                                      
+	******************************************************************************/
     @Override
     public boolean validateResult(String startWord, String endWord, List<String> wordLadder) 
     {
-        throw new UnsupportedOperationException("Not implemented yet!");
+       
+       if (wordLadder.size() == 0 || wordLadder == null)
+       {
+          System.out.println("Empty ladder has been inputted; no ladder exists.");
+          return true;
+       }
+       if (!wordLadder.get(0).equals(startWord))
+          return false;
+       if (wordLadder.size() > 0 && !wordLadder.get(wordLadder.size()-1).equals(endWord))
+          return false;
+       for (int i = 0; i < wordLadder.size() - 1; i++)
+       {
+          // Check for repeated words
+          for (int j = 0; j < wordLadder.size(); j++)
+          {
+             if (j != i && wordLadder.get(i).equals(wordLadder.get(j)))
+                return false;
+          }
+          
+          if (!boolDiff(wordLadder.get(i), wordLadder.get(i+1)))
+             return false;
+       }
+       return true;
+       
     }
 
     // add additional methods here
     
-    public List<String> makeLadder(String from, String to, int position) throws NoSuchLadderException
+    /******************************************************************************
+	* Method Name: makeLadder                                         
+	* Purpose: Constructs the ladder                                     
+	* Returns: Word ladder with word list                                                          
+	******************************************************************************/
+    public List<String> makeLadder(String prev, String next, int pos) throws NoSuchLadderException
     {
-       List<String> possibles = new ArrayList<String>();
-       List<String> finalList = new ArrayList<String>();
+       
+       List<String> choices = new ArrayList<String>();
+       
+       if (prev.equals(next))
+       {
+          soln.add(next);
+          return soln;
+       }
+       
        // base case
-       if (from.equals(to))
+       if (boolDiff(prev, next))
        {
-          finalList.add(from);
-          return finalList;
-       }
-       if (position == 5) // ensure 5 letter word
-       {
-          throw new NoSuchLadderException("No such ladder!");
+          soln.add(next);
+          return soln;
        }
        
        
-       
-       for (int i = position; i < 5; i++) // ensure 5 letter word
+       for (int j = 0; j < dict.size(); j++)
        {
-          String pre = from.substring(0,i);
-          String post = from.substring(i+1);
-          
-          
-          
-          for (int j = 0; j < dict.size(); j++)
-          {
-             if (from.substring(i,i+1).equals(to.substring(i,i+1)));
-             else if (dict.get(j).indexOf(pre) == 0 && dict.get(j).indexOf(post) == (i + 1) && !dict.get(j).substring(i, i+1).equals(from.substring(i,i+1)))
+
+             if (boolDiff(prev, dict.get(j)) && !soln.contains(dict.get(j)) && indexSet(prev, dict.get(j)) != pos)
              {
-                possibles.add(dict.get(j));
+                choices.add(dict.get(j));
              }
-          }
+       }
+       
+       for (String s : choices)
+       {
+          soln.add(s);
+          makeLadder(s, next, indexSet(prev, s));
           
-          for (String s : possibles)
+          //  if there is something in the list and the last element is the target word
+          if (soln.size() > 0 && soln.get(soln.size() - 1).equals(next)) 
           {
-             //TODO: this loop is still a bit broken, need to have it hit the base case (which it doesn't) and the steps in between to get to the final answer list
-             
-        	 //finalList.addAll(makeLadder(s, to, i + 1))		// commented out right now to test loop
-             for (int k = 0; k < 5; k++) //TODO: stackoverflow happens in this loop
+             soln.add(0,prev); //tack this from on the front
+             return soln; //back up one level
+          }
+          for (int p = soln.indexOf(s); p < soln.size() ; p++)
+          {
+             soln.remove(p);
+             p = p - 1;
+          }
+       }
+       
+       return soln;
+       
+    }
+
+    /******************************************************************************
+	* Method Name: boolDiff                                             
+	* Purpose: Detects if strings are different                                     
+	* Returns: Whether s1 = s2                                                          
+	******************************************************************************/
+    public boolean boolDiff(String s1, String s2)
+    {
+       int differences = 0;
+       
+       for (int i = 0; i < 5; i++)
+       {
+         if (!s1.substring(i,i+1).equals(s2.substring(i,i+1)))
+         {
+            differences = differences - 1;
+         }
+       }
+       if (differences == 1) { return true; }
+       return false;
+    }
+    
+    /******************************************************************************
+	* Method Name: indexSet                                             
+	* Purpose: Sets index just set to; Precondition: s1 and s2 are 1 letter off                                     
+	* Returns: Integer index, returns -1 if same                                                          
+	******************************************************************************/
+    public int indexSet(String s1, String s2) 
+    {
+       int index = -1;
+       
+       for (int i = 0; i < 5; i++)
+       {
+          if (!s1.substring(i,i+1).equals(s2.substring(i,i+1)))
+             index = i;
+       }
+       
+       return index;
+    }
+    
+    /******************************************************************************
+	* Method Name: cutLadder                                             
+	* Purpose: Shortens ladder                                     
+	* Returns: None                                                          
+	******************************************************************************/
+    public void cutLadder(List<String> ladder)
+    {
+       for (int i = 0; i < ladder.size(); i++)
+       {
+          for (int j = 0; j < ladder.size(); j++)
+          {
+             if (boolDiff(ladder.get(i), ladder.get(j)))
              {
-                if (k != i)
+                int k = i + 1;
+                while (k < j)
                 {
-                   finalList = makeLadder(s, to, k);
-                   if (finalList.size() > 0 && finalList.get(finalList.size() - 1).equals(to))
-                   {
-                      finalList.add(0,from);
-                      return finalList;
-                   }
+                   ladder.remove(k);
+                   j = j - 1;
                 }
              }
           }
-          
        }
-
-       return finalList;
     }
 }
