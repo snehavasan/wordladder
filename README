@@ -1,0 +1,9 @@
+Authors:  Sneha Vasantharao, Jai Bock Lee
+Team Number: 13
+Version 1.1 2016-3-1
+UTEIDs: sv8398, jbl932
+Lab Section: 11-12:30pm, Lisa Hua
+GIT Repository URL: https://github.com/snehavasan/wordladder.git
+** Main Method is in the Assign4Driver.java class
+** In order to properly run this program, you need to have the dictionary file as the first argument 
+and the test case file as the second argument. That is how our program processes the inputs for the word ladder.
